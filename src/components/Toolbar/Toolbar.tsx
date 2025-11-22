@@ -1,4 +1,3 @@
-
 import Konva from 'konva';
 import {
     ArrowDown,
@@ -8,6 +7,7 @@ import {
     Download,
     Eye,
     Image as ImageIcon,
+    LayoutTemplate,
     Minus,
     Plus,
     SendToBack,
@@ -18,12 +18,15 @@ import {
 import React, { useState } from 'react';
 import { useCanvasStore } from '../../store/useCanvasStore';
 import { exportCanvas, generateSlides } from '../../utils/exportUtils';
+import { LAYOUT_TEMPLATES, applyLayout } from '../../utils/layoutEngine';
 import { InstagramPreview } from '../Preview/InstagramPreview';
 
 export const Toolbar: React.FC = () => {
-    const { addLayer, selectedIds, removeLayer, moveLayer, slideCount, setSlideCount, canvasHeight, setCanvasHeight, backgroundColor, setBackgroundColor, layers, updateLayer } = useCanvasStore();
+    const { addLayer, selectedIds, removeLayer, moveLayer, slideCount, setSlideCount, canvasHeight, setCanvasHeight, backgroundColor, setBackgroundColor, layers, updateLayer, addLayers } = useCanvasStore();
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewSlides, setPreviewSlides] = useState<string[]>([]);
+    const [showLayouts, setShowLayouts] = useState(false);
+    const [targetSlide, setTargetSlide] = useState(1);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const handleUploadClick = () => {
@@ -72,9 +75,6 @@ export const Toolbar: React.FC = () => {
     };
 
     const handleExport = () => {
-        // We need access to the stage.
-        // Since Toolbar is outside StageWrapper, we don't have direct access.
-        // We can use Konva.stages[0] if there is only one stage.
         const stage = Konva.stages[0];
         if (stage) {
             exportCanvas(stage, slideCount);
@@ -91,21 +91,6 @@ export const Toolbar: React.FC = () => {
     };
 
     const handleAddText = () => {
-        // Calculate center of current view
-        // We need to know the stage size, but for now let's just use a rough estimate or 0,0 offset by position
-        // Better: just put it in the middle of the first slide for now, or center of screen if we had access to stage size here.
-        // Let's just put it at 100, 100 relative to current view.
-        // Since we don't have stage ref here easily, let's just add at 100,100 absolute for MVP.
-        // Users can drag it.
-
-        // Actually, let's try to be smarter.
-        // If we want it in the center of the viewport:
-        // viewportX = -position.x / scale
-        // viewportY = -position.y / scale
-        // center = viewport + (width/2, height/2) / scale
-        // We don't know width/height here easily without store update or hook.
-        // Let's stick to a safe default.
-
         addLayer({
             id: crypto.randomUUID(),
             type: 'text',
@@ -122,13 +107,20 @@ export const Toolbar: React.FC = () => {
         addLayer({
             id: crypto.randomUUID(),
             type: 'shape',
-            shapeType: type, // We need to handle this in StageWrapper
+            shapeType: type,
             x: 150,
             y: 150,
             width: 100,
             height: 100,
             fill: '#3b82f6', // blue-500
         });
+    };
+
+    const handleApplyLayout = (templateId: string) => {
+        // targetSlide is 1-based, applyLayout expects 0-based index
+        const newLayers = applyLayout(templateId, targetSlide - 1, 1080, canvasHeight);
+        addLayers(newLayers);
+        setShowLayouts(false);
     };
 
     const hasSelection = selectedIds.length > 0;
@@ -172,7 +164,64 @@ export const Toolbar: React.FC = () => {
                 >
                     <CircleIcon size={20} />
                 </button>
+
+                <div className="w-full h-px bg-white/30 my-1" />
+
+                <button
+                    onClick={() => setShowLayouts(!showLayouts)}
+                    className={`p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors ${showLayouts ? 'bg-white/50 text-blue-600' : ''}`}
+                    title="Layouts"
+                >
+                    <LayoutTemplate size={20} />
+                </button>
             </div>
+
+            {/* Layouts Panel */}
+            {showLayouts && (
+                <div className="fixed left-20 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-4 w-64 z-20 max-h-[80vh] overflow-y-auto">
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-semibold text-gray-700">Layouts</h3>
+                        <div className="flex items-center gap-1">
+                            <span className="text-xs text-gray-500">Slide:</span>
+                            <select
+                                value={targetSlide}
+                                onChange={(e) => setTargetSlide(Number(e.target.value))}
+                                className="text-xs border border-gray-300 rounded px-1 py-0.5 bg-white"
+                            >
+                                {Array.from({ length: slideCount }, (_, i) => i + 1).map(num => (
+                                    <option key={num} value={num}>{num}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                        {LAYOUT_TEMPLATES.map(template => (
+                            <button
+                                key={template.id}
+                                onClick={() => handleApplyLayout(template.id)}
+                                className="aspect-square bg-gray-100 rounded-lg hover:bg-blue-50 hover:border-blue-200 border border-transparent transition-all flex flex-col items-center justify-center gap-1 p-2"
+                            >
+                                <div className="w-full h-full bg-white rounded border border-gray-200 relative overflow-hidden opacity-60">
+                                    {/* Mini preview of layout items */}
+                                    {template.items.map((item, i) => (
+                                        <div
+                                            key={i}
+                                            className="absolute bg-gray-400"
+                                            style={{
+                                                left: `${(item.x / 1080) * 100}%`,
+                                                top: `${(item.y / 1080) * 100}%`,
+                                                width: `${(item.width / 1080) * 100}%`,
+                                                height: `${(item.height / 1080) * 100}%`,
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                                <span className="text-[10px] text-gray-600 font-medium truncate w-full text-center">{template.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Canvas Bar - Bottom Center */}
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur-lg rounded-full shadow-2xl border border-white/20 px-4 py-2 flex items-center gap-4 z-20">
@@ -222,6 +271,30 @@ export const Toolbar: React.FC = () => {
 
                 <div className="w-px h-4" />
 
+                {/* Frame Style Controls - Only visible when image is selected */}
+                {hasSelection && layers.find(l => l.id === selectedIds[0])?.type === 'image' && (() => {
+                    const layer = layers.find(l => l.id === selectedIds[0])!;
+                    return (
+                        <>
+                            <div className="flex items-center gap-1 bg-white/50 rounded-lg p-1">
+                                {['default', 'polaroid', 'vintage'].map(variant => (
+                                    <button
+                                        key={variant}
+                                        onClick={() => updateLayer(selectedIds[0], { variant: variant as any })}
+                                        className={`px-2 py-1 text-md rounded-md transition-all capitalize ${(layer.variant || 'default') === variant
+                                            ? 'bg-white shadow-sm text-blue-600 font-medium'
+                                            : 'text-gray-600 hover:bg-white/50'
+                                            }`}
+                                    >
+                                        {variant}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="w-px h-4 bg-gray-400/30" />
+                        </>
+                    );
+                })()}
+
                 {/* Text Controls - Only visible when text is selected */}
                 {hasSelection && layers.find(l => l.id === selectedIds[0])?.type === 'text' && (() => {
                     const layer = layers.find(l => l.id === selectedIds[0])!;
@@ -238,6 +311,7 @@ export const Toolbar: React.FC = () => {
                                 <option value="Merriweather">Merriweather</option>
                                 <option value="Montserrat">Montserrat</option>
                                 <option value="Oswald">Oswald</option>
+                                <option value="Hina Mincho">Hina Mincho</option>
                             </select>
 
                             <input
@@ -333,9 +407,10 @@ export const Toolbar: React.FC = () => {
                 </div>
             </div>
 
-            {/* Context Menu / Floating Properties - Right of Selection or Fixed Right */}
+            {/* Context Menu / Floating Properties */}
             {hasSelection && (
                 <div className="fixed right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-2 flex flex-col gap-2 z-20 animate-in fade-in slide-in-from-right-2">
+                    {/* Layer Ordering */}
                     <div className="flex flex-col gap-1 border-b border-gray-400/20 pb-2">
                         <button
                             onClick={() => moveLayer(selectedIds[0], 'top')}
@@ -367,6 +442,7 @@ export const Toolbar: React.FC = () => {
                         </button>
                     </div>
 
+                    {/* Delete */}
                     <button
                         onClick={() => removeLayer(selectedIds[0])}
                         className="p-2 hover:bg-red-500/10 text-red-600 rounded-xl transition-colors"
@@ -375,7 +451,10 @@ export const Toolbar: React.FC = () => {
                         <Trash2 size={20} />
                     </button>
 
-                    <PropertiesPanel selectedId={selectedIds[0]} />
+                    {/* Properties Panel Content */}
+                    <div className="pt-2 border-t border-gray-400/20">
+                        <PropertiesPanel selectedId={selectedIds[0]} />
+                    </div>
                 </div>
             )}
 
@@ -395,24 +474,27 @@ const PropertiesPanel = ({ selectedId }: { selectedId: string }) => {
     if (!layer) return null;
 
     return (
-        <div className="border-t border-gray-400/20 pt-2 flex flex-col gap-2">
-            {/* Common: Opacity? Rotation? For now just Fill/Color */}
+        <div className="flex flex-col gap-4 w-full">
+
+
+            {/* Common: Color Picker */}
             {(layer.type === 'shape' || layer.type === 'text') && (
-                <div className="relative group cursor-pointer" title="Change Color">
-                    <div
-                        className="w-8 h-8 rounded-full border border-gray-400/30 shadow-sm"
-                        style={{ backgroundColor: layer.fill || '#000000' }}
-                    />
-                    <input
-                        type="color"
-                        value={layer.fill || '#000000'}
-                        onChange={(e) => updateLayer(selectedId, { fill: e.target.value })}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                    />
+                <div className="flex flex-col gap-2">
+                    <label className="text-xs font-medium text-gray-600">Color</label>
+                    <div className="relative group cursor-pointer">
+                        <div
+                            className="w-full h-8 rounded-lg border border-gray-400/30 shadow-sm"
+                            style={{ backgroundColor: layer.fill || '#000000' }}
+                        />
+                        <input
+                            type="color"
+                            value={layer.fill || '#000000'}
+                            onChange={(e) => updateLayer(selectedId, { fill: e.target.value })}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                    </div>
                 </div>
             )}
-
-
         </div>
     );
 }

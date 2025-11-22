@@ -1,15 +1,14 @@
 import Konva from 'konva';
 import React, { useEffect, useRef } from 'react';
-import { Circle, Image as KonvaImage, Layer, Rect, Stage, Text } from 'react-konva';
-import useImage from 'use-image';
+import { Circle, Layer, Rect, Stage, Text } from 'react-konva';
 import { useCanvasStore } from '../../store/useCanvasStore';
+import { SmartFrame } from './Frames/SmartFrame';
 import { SlideGuides } from './SlideGuides';
 import { Transformer } from './Transformer';
 
 // Helper component to render individual layers
 const CanvasLayer = ({ layer, isSelected, onSelect, onChange }: any) => {
     const shapeRef = useRef<Konva.Shape>(null);
-    const [img] = useImage(layer.content || '', 'anonymous');
 
     useEffect(() => {
         if (isSelected && shapeRef.current) {
@@ -55,10 +54,11 @@ const CanvasLayer = ({ layer, isSelected, onSelect, onChange }: any) => {
 
     if (layer.type === 'image') {
         return (
-            <KonvaImage
-                {...commonProps}
-                ref={shapeRef as any}
-                image={img}
+            <SmartFrame
+                layer={layer}
+                isSelected={isSelected}
+                onSelect={onSelect}
+                onChange={onChange}
             />
         );
     }
@@ -203,6 +203,23 @@ export const StageWrapper: React.FC = () => {
 
         if (!pointerPosition) return;
 
+        // Check for intersection with existing frames
+        const targetShape = stage.getIntersection(pointerPosition);
+        let targetLayerId: string | null = null;
+
+        if (targetShape) {
+            // Traverse up to find the layer group
+            let node: Konva.Node | null = targetShape;
+            while (node && node !== stage) {
+                const id = node.id();
+                if (id && layers.some(l => l.id === id && l.type === 'image')) {
+                    targetLayerId = id;
+                    break;
+                }
+                node = node.parent;
+            }
+        }
+
         // Convert pointer position to stage coordinates (accounting for zoom/pan)
         const stageX = (pointerPosition.x - stage.x()) / stage.scaleX();
         const stageY = (pointerPosition.y - stage.y()) / stage.scaleY();
@@ -216,6 +233,19 @@ export const StageWrapper: React.FC = () => {
                     const img = new Image();
                     img.src = reader.result as string;
                     img.onload = () => {
+                        // If we dropped on a target frame, update it
+                        if (targetLayerId) {
+                            updateLayer(targetLayerId, {
+                                content: reader.result as string,
+                                // Reset crop settings for new image
+                                cropScale: 1,
+                                cropX: 0,
+                                cropY: 0
+                            });
+                            return;
+                        }
+
+                        // Otherwise create new layer
                         // Calculate dimensions to fit nicely if too big, or just use native
                         // For now, let's limit max width to 500px for initial drop
                         let width = img.width;

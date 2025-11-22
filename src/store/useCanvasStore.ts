@@ -14,6 +14,7 @@ interface CanvasState {
   setScale: (scale: number) => void;
   setPosition: (pos: { x: number; y: number }) => void;
   addLayer: (layer: LayerData) => void;
+  addLayers: (layers: LayerData[]) => void;
   updateLayer: (id: string, attrs: Partial<LayerData>) => void;
   removeLayer: (id: string) => void;
   moveLayer: (id: string, direction: 'up' | 'down' | 'top' | 'bottom') => void;
@@ -36,6 +37,12 @@ export interface LayerData {
   fontStyle?: string; // 'normal', 'italic', 'bold', 'italic bold'
   textDecoration?: string; // 'underline', 'line-through', ''
   align?: string; // 'left', 'center', 'right'
+  variant?: 'default' | 'polaroid' | 'vintage';
+  padding?: number;
+  borderRadius?: number;
+  cropScale?: number;
+  cropX?: number;
+  cropY?: number;
   [key: string]: any;
 }
 
@@ -53,6 +60,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   setScale: (scale) => set({ scale }),
   setPosition: (position) => set({ position }),
   addLayer: (layer) => set((state) => ({ layers: [...state.layers, layer] })),
+  addLayers: (newLayers) => set((state) => ({ layers: [...state.layers, ...newLayers] })),
   updateLayer: (id, attrs) =>
     set((state) => ({
       layers: state.layers.map((layer) =>
