@@ -50,8 +50,8 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   slideCount: 3, // Default to 3 slides
   canvasHeight: 1080,
   backgroundColor: '#ffffff',
-  scale: 1,
-  position: { x: 0, y: 0 },
+  scale: 0.5,
+  position: { x: 100, y: 100 },
   layers: [],
   selectedIds: [],
   setSlideCount: (count) => set({ slideCount: count }),
