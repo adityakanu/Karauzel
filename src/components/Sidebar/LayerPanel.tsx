@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { ArrowDown, ArrowUp, Circle as CircleIcon, Image as ImageIcon, Square, Trash2, Type } from 'lucide-react';
 import React from 'react';
 import { useCanvasStore, type LayerData } from '../../store/useCanvasStore';
+import { Tooltip } from '../ui/Tooltip';
 
 export const LayerPanel: React.FC = () => {
     const { layers, selectedIds, setSelectedIds, removeLayer, moveLayer } = useCanvasStore();
@@ -57,36 +58,39 @@ export const LayerPanel: React.FC = () => {
 
                             {/* Quick Actions on Hover */}
                             <div className={clsx("flex items-center gap-1", isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        moveLayer(layer.id, 'up');
-                                    }}
-                                    className="p-1 hover:bg-white/50 text-gray-500 rounded-lg transition-colors"
-                                    title="Move Up"
-                                >
-                                    <ArrowUp size={12} />
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        moveLayer(layer.id, 'down');
-                                    }}
-                                    className="p-1 hover:bg-white/50 text-gray-500 rounded-lg transition-colors"
-                                    title="Move Down"
-                                >
-                                    <ArrowDown size={12} />
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeLayer(layer.id);
-                                    }}
-                                    className="p-1 hover:bg-red-500/10 hover:text-red-600 rounded-lg transition-colors"
-                                    title="Delete"
-                                >
-                                    <Trash2 size={12} />
-                                </button>
+                                <Tooltip content="Move Up" position="top">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            moveLayer(layer.id, 'up');
+                                        }}
+                                        className="p-1 hover:bg-white/50 text-gray-500 rounded-lg transition-colors"
+                                    >
+                                        <ArrowUp size={12} />
+                                    </button>
+                                </Tooltip>
+                                <Tooltip content="Move Down" position="top">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            moveLayer(layer.id, 'down');
+                                        }}
+                                        className="p-1 hover:bg-white/50 text-gray-500 rounded-lg transition-colors"
+                                    >
+                                        <ArrowDown size={12} />
+                                    </button>
+                                </Tooltip>
+                                <Tooltip content="Delete" position="top">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeLayer(layer.id);
+                                        }}
+                                        className="p-1 hover:bg-red-500/10 hover:text-red-600 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                </Tooltip>
                             </div>
                         </div>
                     );

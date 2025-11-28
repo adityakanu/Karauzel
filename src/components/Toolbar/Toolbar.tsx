@@ -20,6 +20,7 @@ import { useCanvasStore } from '../../store/useCanvasStore';
 import { exportCanvas, generateSlides } from '../../utils/exportUtils';
 import { LAYOUT_TEMPLATES, applyLayout } from '../../utils/layoutEngine';
 import { InstagramPreview } from '../Preview/InstagramPreview';
+import { Tooltip } from '../ui/Tooltip';
 
 export const Toolbar: React.FC = () => {
     const { addLayer, selectedIds, removeLayer, moveLayer, slideCount, setSlideCount, canvasHeight, setCanvasHeight, backgroundColor, setBackgroundColor, layers, updateLayer, addLayers } = useCanvasStore();
@@ -129,13 +130,14 @@ export const Toolbar: React.FC = () => {
         <>
             {/* Tools Bar - Left Vertical */}
             <div className="fixed left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-1.5 flex flex-col gap-1 z-20">
-                <button
-                    onClick={handleUploadClick}
-                    className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
-                    title="Upload Image"
-                >
-                    <ImageIcon size={20} />
-                </button>
+                <Tooltip content="Upload Image" position="right">
+                    <button
+                        onClick={handleUploadClick}
+                        className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
+                    >
+                        <ImageIcon size={20} />
+                    </button>
+                </Tooltip>
                 <input
                     type="file"
                     ref={fileInputRef}
@@ -143,37 +145,41 @@ export const Toolbar: React.FC = () => {
                     accept="image/*"
                     className="hidden"
                 />
-                <button
-                    onClick={handleAddText}
-                    className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
-                    title="Add Text"
-                >
-                    <Type size={20} />
-                </button>
-                <button
-                    onClick={() => handleAddShape('rect')}
-                    className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
-                    title="Add Rectangle"
-                >
-                    <Square size={20} />
-                </button>
-                <button
-                    onClick={() => handleAddShape('circle')}
-                    className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
-                    title="Add Circle"
-                >
-                    <CircleIcon size={20} />
-                </button>
+                <Tooltip content="Add Text" position="right">
+                    <button
+                        onClick={handleAddText}
+                        className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
+                    >
+                        <Type size={20} />
+                    </button>
+                </Tooltip>
+                <Tooltip content="Add Rectangle" position="right">
+                    <button
+                        onClick={() => handleAddShape('rect')}
+                        className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
+                    >
+                        <Square size={20} />
+                    </button>
+                </Tooltip>
+                <Tooltip content="Add Circle" position="right">
+                    <button
+                        onClick={() => handleAddShape('circle')}
+                        className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
+                    >
+                        <CircleIcon size={20} />
+                    </button>
+                </Tooltip>
 
                 <div className="w-full h-px bg-white/30 my-1" />
 
-                <button
-                    onClick={() => setShowLayouts(!showLayouts)}
-                    className={`p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors ${showLayouts ? 'bg-white/50 text-blue-600' : ''}`}
-                    title="Layouts"
-                >
-                    <LayoutTemplate size={20} />
-                </button>
+                <Tooltip content="Layouts" position="right">
+                    <button
+                        onClick={() => setShowLayouts(!showLayouts)}
+                        className={`p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors ${showLayouts ? 'bg-white/50 text-blue-600' : ''}`}
+                    >
+                        <LayoutTemplate size={20} />
+                    </button>
+                </Tooltip>
             </div>
 
             {/* Layouts Panel */}
@@ -227,47 +233,51 @@ export const Toolbar: React.FC = () => {
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur-lg rounded-full shadow-2xl border border-white/20 px-4 py-2 flex items-center gap-4 z-20">
                 {/* Slide Controls */}
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setSlideCount(Math.max(1, slideCount - 1))}
-                        className="p-1.5 hover:bg-white/50 rounded-full text-gray-500 transition-colors"
-                        title="Remove Slide"
-                    >
-                        <Minus size={16} />
-                    </button>
+                    <Tooltip content="Remove Slide" position="top">
+                        <button
+                            onClick={() => setSlideCount(Math.max(1, slideCount - 1))}
+                            className="p-1.5 hover:bg-white/50 rounded-full text-gray-500 transition-colors"
+                        >
+                            <Minus size={16} />
+                        </button>
+                    </Tooltip>
                     <span className="text-sm font-medium text-gray-700 min-w-[2ch] text-center">{slideCount}</span>
-                    <button
-                        onClick={() => setSlideCount(slideCount + 1)}
-                        className="p-1.5 hover:bg-white/50 rounded-full text-gray-500 transition-colors"
-                        title="Add Slide"
-                    >
-                        <Plus size={16} />
-                    </button>
+                    <Tooltip content="Add Slide" position="top">
+                        <button
+                            onClick={() => setSlideCount(slideCount + 1)}
+                            className="p-1.5 hover:bg-white/50 rounded-full text-gray-500 transition-colors"
+                        >
+                            <Plus size={16} />
+                        </button>
+                    </Tooltip>
                 </div>
 
                 <div className="w-px h-4 bg-gray-400/30" />
 
                 {/* Height Toggle */}
-                <button
-                    onClick={() => setCanvasHeight(canvasHeight === 1080 ? 1350 : 1080)}
-                    className="px-3 py-1 hover:bg-white/50 rounded-full text-gray-700 transition-colors text-xs font-medium border border-gray-400/30"
-                    title="Toggle Height"
-                >
-                    {canvasHeight === 1080 ? '1:1' : '4:5'}
-                </button>
+                <Tooltip content="Toggle Height" position="top">
+                    <button
+                        onClick={() => setCanvasHeight(canvasHeight === 1080 ? 1350 : 1080)}
+                        className="px-3 py-1 hover:bg-white/50 rounded-full text-gray-700 transition-colors text-xs font-medium border border-gray-400/30"
+                    >
+                        {canvasHeight === 1080 ? '1:1' : '4:5'}
+                    </button>
+                </Tooltip>
 
                 <div className="w-px h-4 bg-gray-400/30" />
 
                 {/* Background Color */}
-                <div className="relative group cursor-pointer">
-                    <div className="w-6 h-6 rounded-full border border-gray-400/30 shadow-sm" style={{ backgroundColor }} />
-                    <input
-                        type="color"
-                        value={backgroundColor}
-                        onChange={(e) => setBackgroundColor(e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        title="Background Color"
-                    />
-                </div>
+                <Tooltip content="Background Color" position="top">
+                    <div className="relative group cursor-pointer">
+                        <div className="w-6 h-6 rounded-full border border-gray-400/30 shadow-sm" style={{ backgroundColor }} />
+                        <input
+                            type="color"
+                            value={backgroundColor}
+                            onChange={(e) => setBackgroundColor(e.target.value)}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                    </div>
+                </Tooltip>
 
                 <div className="w-px h-4" />
 
@@ -314,73 +324,78 @@ export const Toolbar: React.FC = () => {
                                 <option value="Hina Mincho">Hina Mincho</option>
                             </select>
 
-                            <input
-                                type="number"
-                                value={layer.fontSize || 24}
-                                onChange={(e) => updateLayer(selectedIds[0], { fontSize: Number(e.target.value) })}
-                                className="w-14 text-sm border border-gray-400/30 rounded px-2 py-1 bg-white/50 hover:bg-white/70 transition-colors"
-                                title="Font Size"
-                            />
+                            <Tooltip content="Font Size" position="top">
+                                <input
+                                    type="number"
+                                    value={layer.fontSize || 24}
+                                    onChange={(e) => updateLayer(selectedIds[0], { fontSize: Number(e.target.value) })}
+                                    className="w-14 text-sm border border-gray-400/30 rounded px-2 py-1 bg-white/50 hover:bg-white/70 transition-colors"
+                                />
+                            </Tooltip>
 
                             <div className="flex items-center gap-0.5 bg-white/50 rounded p-0.5">
-                                <button
-                                    onClick={() => {
-                                        const currentStyle = layer.fontStyle || 'normal';
-                                        const isBold = currentStyle.includes('bold');
-                                        let newStyle = currentStyle;
-                                        if (isBold) {
-                                            newStyle = newStyle.replace('bold', '').trim();
-                                        } else {
-                                            newStyle = `${newStyle} bold`.trim();
-                                        }
-                                        if (!newStyle) newStyle = 'normal';
-                                        updateLayer(selectedIds[0], { fontStyle: newStyle });
-                                    }}
-                                    className={`px-2 py-1 rounded hover:bg-white transition-colors ${layer.fontStyle?.includes('bold') ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'}`}
-                                    title="Bold"
-                                >
-                                    <span className="font-bold text-base">B</span>
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const currentStyle = layer.fontStyle || 'normal';
-                                        const isItalic = currentStyle.includes('italic');
-                                        let newStyle = currentStyle;
-                                        if (isItalic) {
-                                            newStyle = newStyle.replace('italic', '').trim();
-                                        } else {
-                                            newStyle = `${newStyle} italic`.trim();
-                                        }
-                                        if (!newStyle) newStyle = 'normal';
-                                        updateLayer(selectedIds[0], { fontStyle: newStyle });
-                                    }}
-                                    className={`px-2 py-1 rounded hover:bg-white transition-colors ${layer.fontStyle?.includes('italic') ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'}`}
-                                    title="Italic"
-                                >
-                                    <span className="italic text-base">I</span>
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const currentDeco = layer.textDecoration || '';
-                                        const isUnderline = currentDeco.includes('underline');
-                                        updateLayer(selectedIds[0], { textDecoration: isUnderline ? '' : 'underline' });
-                                    }}
-                                    className={`px-2 py-1 rounded hover:bg-white transition-colors ${layer.textDecoration === 'underline' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'}`}
-                                    title="Underline"
-                                >
-                                    <span className="underline text-base">U</span>
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const currentDeco = layer.textDecoration || '';
-                                        const isStrike = currentDeco.includes('line-through');
-                                        updateLayer(selectedIds[0], { textDecoration: isStrike ? '' : 'line-through' });
-                                    }}
-                                    className={`px-2 py-1 rounded hover:bg-white transition-colors ${layer.textDecoration === 'line-through' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'}`}
-                                    title="Strikethrough"
-                                >
-                                    <span className="line-through text-base">S</span>
-                                </button>
+                                <Tooltip content="Bold" position="top">
+                                    <button
+                                        onClick={() => {
+                                            const currentStyle = layer.fontStyle || 'normal';
+                                            const isBold = currentStyle.includes('bold');
+                                            let newStyle = currentStyle;
+                                            if (isBold) {
+                                                newStyle = newStyle.replace('bold', '').trim();
+                                            } else {
+                                                newStyle = `${newStyle} bold`.trim();
+                                            }
+                                            if (!newStyle) newStyle = 'normal';
+                                            updateLayer(selectedIds[0], { fontStyle: newStyle });
+                                        }}
+                                        className={`px-2 py-1 rounded hover:bg-white transition-colors ${layer.fontStyle?.includes('bold') ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'}`}
+                                    >
+                                        <span className="font-bold text-base">B</span>
+                                    </button>
+                                </Tooltip>
+                                <Tooltip content="Italic" position="top">
+                                    <button
+                                        onClick={() => {
+                                            const currentStyle = layer.fontStyle || 'normal';
+                                            const isItalic = currentStyle.includes('italic');
+                                            let newStyle = currentStyle;
+                                            if (isItalic) {
+                                                newStyle = newStyle.replace('italic', '').trim();
+                                            } else {
+                                                newStyle = `${newStyle} italic`.trim();
+                                            }
+                                            if (!newStyle) newStyle = 'normal';
+                                            updateLayer(selectedIds[0], { fontStyle: newStyle });
+                                        }}
+                                        className={`px-2 py-1 rounded hover:bg-white transition-colors ${layer.fontStyle?.includes('italic') ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'}`}
+                                    >
+                                        <span className="italic text-base">I</span>
+                                    </button>
+                                </Tooltip>
+                                <Tooltip content="Underline" position="top">
+                                    <button
+                                        onClick={() => {
+                                            const currentDeco = layer.textDecoration || '';
+                                            const isUnderline = currentDeco.includes('underline');
+                                            updateLayer(selectedIds[0], { textDecoration: isUnderline ? '' : 'underline' });
+                                        }}
+                                        className={`px-2 py-1 rounded hover:bg-white transition-colors ${layer.textDecoration === 'underline' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'}`}
+                                    >
+                                        <span className="underline text-base">U</span>
+                                    </button>
+                                </Tooltip>
+                                <Tooltip content="Strikethrough" position="top">
+                                    <button
+                                        onClick={() => {
+                                            const currentDeco = layer.textDecoration || '';
+                                            const isStrike = currentDeco.includes('line-through');
+                                            updateLayer(selectedIds[0], { textDecoration: isStrike ? '' : 'line-through' });
+                                        }}
+                                        className={`px-2 py-1 rounded hover:bg-white transition-colors ${layer.textDecoration === 'line-through' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600'}`}
+                                    >
+                                        <span className="line-through text-base">S</span>
+                                    </button>
+                                </Tooltip>
                             </div>
 
                             <div className="w-px h-4 bg-gray-400/30" />
@@ -390,20 +405,22 @@ export const Toolbar: React.FC = () => {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1">
-                    <button
-                        onClick={handlePreview}
-                        className="p-2 hover:bg-white/50 text-purple-600 rounded-full transition-colors"
-                        title="Preview"
-                    >
-                        <Eye size={20} />
-                    </button>
-                    <button
-                        onClick={handleExport}
-                        className="p-2 hover:bg-white/50 text-blue-600 rounded-full transition-colors"
-                        title="Export"
-                    >
-                        <Download size={20} />
-                    </button>
+                    <Tooltip content="Preview" position="top">
+                        <button
+                            onClick={handlePreview}
+                            className="p-2 hover:bg-white/50 text-purple-600 rounded-full transition-colors"
+                        >
+                            <Eye size={20} />
+                        </button>
+                    </Tooltip>
+                    <Tooltip content="Export" position="top">
+                        <button
+                            onClick={handleExport}
+                            className="p-2 hover:bg-white/50 text-blue-600 rounded-full transition-colors"
+                        >
+                            <Download size={20} />
+                        </button>
+                    </Tooltip>
                 </div>
             </div>
 
@@ -412,44 +429,49 @@ export const Toolbar: React.FC = () => {
                 <div className="fixed right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-2 flex flex-col gap-2 z-20 animate-in fade-in slide-in-from-right-2">
                     {/* Layer Ordering */}
                     <div className="flex flex-col gap-1 border-b border-gray-400/20 pb-2">
-                        <button
-                            onClick={() => moveLayer(selectedIds[0], 'top')}
-                            className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
-                            title="Bring to Front"
-                        >
-                            <BringToFront size={20} />
-                        </button>
-                        <button
-                            onClick={() => moveLayer(selectedIds[0], 'up')}
-                            className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
-                            title="Bring Forward"
-                        >
-                            <ArrowUp size={20} />
-                        </button>
-                        <button
-                            onClick={() => moveLayer(selectedIds[0], 'down')}
-                            className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
-                            title="Send Backward"
-                        >
-                            <ArrowDown size={20} />
-                        </button>
-                        <button
-                            onClick={() => moveLayer(selectedIds[0], 'bottom')}
-                            className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
-                            title="Send to Back"
-                        >
-                            <SendToBack size={20} />
-                        </button>
+                        <Tooltip content="Bring to Front" position="left">
+                            <button
+                                onClick={() => moveLayer(selectedIds[0], 'top')}
+                                className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
+                            >
+                                <BringToFront size={20} />
+                            </button>
+                        </Tooltip>
+                        <Tooltip content="Bring Forward" position="left">
+                            <button
+                                onClick={() => moveLayer(selectedIds[0], 'up')}
+                                className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
+                            >
+                                <ArrowUp size={20} />
+                            </button>
+                        </Tooltip>
+                        <Tooltip content="Send Backward" position="left">
+                            <button
+                                onClick={() => moveLayer(selectedIds[0], 'down')}
+                                className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
+                            >
+                                <ArrowDown size={20} />
+                            </button>
+                        </Tooltip>
+                        <Tooltip content="Send to Back" position="left">
+                            <button
+                                onClick={() => moveLayer(selectedIds[0], 'bottom')}
+                                className="p-2 hover:bg-white/50 rounded-xl text-gray-700 transition-colors"
+                            >
+                                <SendToBack size={20} />
+                            </button>
+                        </Tooltip>
                     </div>
 
                     {/* Delete */}
-                    <button
-                        onClick={() => removeLayer(selectedIds[0])}
-                        className="p-2 hover:bg-red-500/10 text-red-600 rounded-xl transition-colors"
-                        title="Delete"
-                    >
-                        <Trash2 size={20} />
-                    </button>
+                    <Tooltip content="Delete" position="left">
+                        <button
+                            onClick={() => removeLayer(selectedIds[0])}
+                            className="p-2 hover:bg-red-500/10 text-red-600 rounded-xl transition-colors"
+                        >
+                            <Trash2 size={20} />
+                        </button>
+                    </Tooltip>
 
                     {/* Properties Panel Content */}
                     <div className="pt-2 border-t border-gray-400/20">
